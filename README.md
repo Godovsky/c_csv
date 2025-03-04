@@ -16,5 +16,5 @@ make run
 ```
 To remove all the binaries:
 ``` bash
-make clean   - to remove all the binaries
+make clean
 ```
