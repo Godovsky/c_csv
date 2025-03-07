@@ -28,14 +28,14 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 #define MIN_SAVED_VALUE_LENGTH 16
 #define MAX_SAVED_VALUE_LENGTH 128
 
-typedef struct {
+typedef struct private {
     char * data;
     int dataSize;
     char separator;
     int numberOfRows;
     int numberOfColumns;
     LAST_VALUE LastValue;
-} PRIVATE;
+} * PRIVATE;
 
 C_CSV C_CSV_Create() {
     if (SAVED_VALUE_LENGTH < MIN_SAVED_VALUE_LENGTH || SAVED_VALUE_LENGTH > MAX_SAVED_VALUE_LENGTH) {
@@ -44,8 +44,8 @@ C_CSV C_CSV_Create() {
         return NULL;
     }
 
-    PRIVATE * prvt = NULL;
-    prvt = (PRIVATE *)malloc(sizeof(PRIVATE));
+    PRIVATE prvt = NULL;
+    prvt = (PRIVATE)malloc(sizeof(struct private));
     if (NULL == prvt) {
         printf("C_CSV_Create: failed memory allocation\n");
 
@@ -75,8 +75,8 @@ int C_CSV_Delete(C_CSV * obj) {
         return 1;
     }
 
-    if (NULL != ((PRIVATE *)*obj)->data)
-        free(((PRIVATE *)*obj)->data);
+    if (NULL != ((PRIVATE)*obj)->data)
+        free(((PRIVATE)*obj)->data);
 
     free(*obj);
     *obj = NULL;
@@ -101,7 +101,7 @@ int C_CSV_SetSeparator(C_CSV obj, char separator) {
         return 1;
     }
 
-    ((PRIVATE *)obj)->separator = separator;
+    ((PRIVATE)obj)->separator = separator;
 
     return 0;
 }
@@ -113,7 +113,7 @@ int C_CSV_GetDataSize(C_CSV obj, size_t * size) {
         return 1;
     }
 
-    *size = ((PRIVATE *)obj)->dataSize;
+    *size = ((PRIVATE)obj)->dataSize;
 
     return 0;
 }
@@ -125,7 +125,7 @@ int C_CSV_GetNumberOfRows(C_CSV obj, size_t * numberOfRows) {
         return 1;
     }
 
-    *numberOfRows = ((PRIVATE *)obj)->numberOfRows;
+    *numberOfRows = ((PRIVATE)obj)->numberOfRows;
 
     return 0;
 }
@@ -137,7 +137,7 @@ int C_CSV_GetNumberOfColumns(C_CSV obj, size_t * numberOfColumns) {
         return 1;
     }
 
-    *numberOfColumns = ((PRIVATE *)obj)->numberOfColumns;
+    *numberOfColumns = ((PRIVATE)obj)->numberOfColumns;
 
     return 0;
 }
@@ -161,7 +161,7 @@ int C_CSV_ReadFile(C_CSV obj, char fileName[]) {
         return 1;
     }
 
-    PRIVATE * prvt = (PRIVATE *)obj;
+    PRIVATE prvt = (PRIVATE)obj;
 
     if (0 == prvt->separator) {
         printf("C_CSV_ReadFile: separator is not specified\n");
@@ -309,7 +309,7 @@ int c_csv_add_row(C_CSV obj, char * row[], size_t size) {
         return 1;
     }
 
-    PRIVATE * prvt = (PRIVATE *)obj;
+    PRIVATE prvt = (PRIVATE)obj;
 
     if (0 == prvt->separator) {
         printf("c_csv_add_row: separator is not specified\n");
@@ -381,7 +381,7 @@ int C_CSV_WriteFile(C_CSV obj, char fileName[]) {
         return 1;
     }
 
-    PRIVATE * prvt = (PRIVATE *)obj;
+    PRIVATE prvt = (PRIVATE)obj;
 
     if (NULL == prvt->data) {
         printf("C_CSV_WriteFile: the data is NULL\n");
@@ -421,7 +421,7 @@ int C_CSV_GetValue(C_CSV obj, size_t row, size_t col, LAST_VALUE * LastValue) {
         return 1;
     }
 
-    PRIVATE * prvt = (PRIVATE *)obj;
+    PRIVATE prvt = (PRIVATE)obj;
 
     if (row > prvt->numberOfRows - 1 ||
         row < 0 ||
@@ -474,7 +474,7 @@ int C_CSV_GetLastSavedValue(C_CSV obj, LAST_VALUE * LastValue) {
         return 1;
     }
 
-    PRIVATE * prvt = (PRIVATE *)obj;
+    PRIVATE prvt = (PRIVATE)obj;
 
     *LastValue = prvt->LastValue;
 
