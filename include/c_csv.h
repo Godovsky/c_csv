@@ -27,6 +27,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 /** A pointer to the object that is used to work with the csv format. */
 typedef void * C_CSV;
 
+/** Structure for saving the value found in the CSV file. */
 typedef struct {
     char lastSavedValue[SAVED_VALUE_LENGTH];
 } LAST_VALUE;
