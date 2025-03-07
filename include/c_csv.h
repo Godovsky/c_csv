@@ -27,6 +27,10 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 /** A pointer to the object that is used to work with the csv format. */
 typedef void * C_CSV;
 
+typedef struct {
+    char lastSavedValue[SAVED_VALUE_LENGTH];
+} LAST_VALUE;
+
 /** The function allocates memory for the C_CSV (void *) object and returs it.
  * All object parameters will be initialized with zeros.
  * In case of an error, NULL is returned. */
@@ -73,11 +77,11 @@ int C_CSV_WriteFile(C_CSV obj, char fileName[]);
 
 /** A function to get the value stored in row "row" and column "col".
  * Returns a pointer to a string with a value or NULL in case of an error. */
-char * C_CSV_GetValue(C_CSV obj, size_t row, size_t col);
+int C_CSV_GetValue(C_CSV obj, size_t row, size_t col, LAST_VALUE * LastValue);
 
 /** The function of getting the last value that was read from the file through the C_CSV_GetValue function.
  * Returns a pointer to a string with a value or NULL in case of an error. */
-char * C_CSV_GetLastSavedValue(C_CSV obj);
+int C_CSV_GetLastSavedValue(C_CSV obj, LAST_VALUE * LastValue);
 
 /** The function of adding a string to the end of the data stored in the object.
  * Use the macro C_CSV_AddRow(obj, row) to avoid errors related to the length of the row.

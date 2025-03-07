@@ -14,17 +14,15 @@ int main(int argc, char * argv[]) {
                 if (0 == C_CSV_GetNumberOfRows(obj, &rows)) {
                     size_t i;
                     for (i = 0; i < rows; i++) {
-                        char * tmpStr = C_CSV_GetValue(obj, i, 0);
-                        if (NULL != tmpStr)
-                            printf("Row = %lld, column = %d: %s | ", i, 0, tmpStr);
+                        LAST_VALUE LastValue = {0};
+                        if (0 == C_CSV_GetValue(obj, i, 0, &LastValue))
+                            printf("Row = %lld, column = %d: %s | ", i, 0, LastValue.lastSavedValue);
 
-                        tmpStr = C_CSV_GetValue(obj, i, 3);
-                        if (NULL != tmpStr)
-                            printf("Row = %lld, column = %d: %s | ", i, 3, tmpStr);
+                        if (0 == C_CSV_GetValue(obj, i, 0, &LastValue))
+                            printf("Row = %lld, column = %d: %s | ", i, 3, LastValue.lastSavedValue);
 
-                        tmpStr = C_CSV_GetLastSavedValue(obj);
-                        if (NULL != tmpStr)
-                            printf("Last saved value: %s\n", tmpStr);
+                        if (0 == C_CSV_GetValue(obj, i, 0, &LastValue))
+                            printf("Last saved value: %s\n", LastValue.lastSavedValue);
                     }
                 }
             }

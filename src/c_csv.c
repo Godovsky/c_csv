@@ -34,7 +34,7 @@ typedef struct {
     char separator;
     int numberOfRows;
     int numberOfColumns;
-    char lastSavedValue[SAVED_VALUE_LENGTH];
+    LAST_VALUE LastValue;
 } PRIVATE;
 
 C_CSV C_CSV_Create() {
@@ -57,7 +57,7 @@ C_CSV C_CSV_Create() {
     prvt->separator = 0;
     prvt->numberOfRows = 0;
     prvt->numberOfColumns = 0;
-    memset(prvt->lastSavedValue, 0, SAVED_VALUE_LENGTH);
+    memset(prvt->LastValue.lastSavedValue, 0, SAVED_VALUE_LENGTH);
 
     return (C_CSV)prvt;
 }
@@ -414,11 +414,11 @@ int C_CSV_WriteFile(C_CSV obj, char fileName[]) {
     return 0;
 }
 
-char * C_CSV_GetValue(C_CSV obj, size_t row, size_t col) {
+int C_CSV_GetValue(C_CSV obj, size_t row, size_t col, LAST_VALUE * LastValue) {
     if (NULL == obj) {
         printf("C_CSV_GetValue: the object is NULL\n");
 
-        return NULL;
+        return 1;
     }
 
     PRIVATE * prvt = (PRIVATE *)obj;
@@ -429,7 +429,7 @@ char * C_CSV_GetValue(C_CSV obj, size_t row, size_t col) {
         col < 0) {
         printf("C_CSV_GetValue: the arguments passed are out of range (%d rows, %d columns)\n", prvt->numberOfRows, prvt->numberOfColumns);
 
-        return NULL;
+        return 1;
     }
 
     int tmpCol = 0;
@@ -444,16 +444,15 @@ char * C_CSV_GetValue(C_CSV obj, size_t row, size_t col) {
                 indexNextSeparator++;
             }
 
-            memset(prvt->lastSavedValue, 0, SAVED_VALUE_LENGTH);
+            memset(prvt->LastValue.lastSavedValue, 0, SAVED_VALUE_LENGTH);
             if (indexNextSeparator >= SAVED_VALUE_LENGTH)
-                memcpy(prvt->lastSavedValue, &prvt->data[i], SAVED_VALUE_LENGTH - 1);
+                memcpy(prvt->LastValue.lastSavedValue, &prvt->data[i], SAVED_VALUE_LENGTH - 1);
             else
-                memcpy(prvt->lastSavedValue, &prvt->data[i], indexNextSeparator);
+                memcpy(prvt->LastValue.lastSavedValue, &prvt->data[i], indexNextSeparator);
 
-            static char tmpStr[SAVED_VALUE_LENGTH];
-            strcpy(tmpStr, ((PRIVATE *)obj)->lastSavedValue);
+            *LastValue = prvt->LastValue;
 
-            return tmpStr;
+            return 0;
         }
         if (prvt->data[i] == prvt->separator || prvt->data[i] == '\n' || i + 1 == prvt->dataSize) {
             tmpCol++;
@@ -465,18 +464,19 @@ char * C_CSV_GetValue(C_CSV obj, size_t row, size_t col) {
         }
     }
 
-    return NULL;
+    return 1;
 }
 
-char * C_CSV_GetLastSavedValue(C_CSV obj) {
+int C_CSV_GetLastSavedValue(C_CSV obj, LAST_VALUE * LastValue) {
     if (NULL == obj) {
         printf("C_CSV_GetValue: the object is NULL\n");
 
-        return NULL;
+        return 1;
     }
 
-    static char tmpStr[SAVED_VALUE_LENGTH];
-    strcpy(tmpStr, ((PRIVATE *)obj)->lastSavedValue);
+    PRIVATE * prvt = (PRIVATE *)obj;
 
-    return tmpStr;
+    *LastValue = prvt->LastValue;
+
+    return 0;
 }
