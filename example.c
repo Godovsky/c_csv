@@ -21,7 +21,7 @@ int main(int argc, char * argv[]) {
                         if (0 == C_CSV_GetValue(obj, i, 0, &LastValue))
                             printf("Row = %lld, column = %d: %s | ", i, 3, LastValue.lastSavedValue);
 
-                        if (0 == C_CSV_GetValue(obj, i, 0, &LastValue))
+                        if (0 == C_CSV_GetLastSavedValue(obj, &LastValue))
                             printf("Last saved value: %s\n", LastValue.lastSavedValue);
                     }
                 }
