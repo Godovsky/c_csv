@@ -73,13 +73,13 @@ int C_CSV_WriteFile(C_CSV obj, char fileName[]);
  * Use the macro C_CSV_GetValue(obj, row, col, buffer) to avoid errors related to the length of the row.
  * Returns a pointer to a string with a value or NULL in case of an error. */
 #define C_CSV_GetValue(obj, row, col, buffer) c_csv_get_value((obj), (row), (col), (buffer), sizeof((buffer)) / sizeof((buffer)[0]))
-int c_csv_get_value(C_CSV obj, size_t row, size_t col, char * buffer, int bufSize);
+int c_csv_get_value(C_CSV obj, size_t row, size_t col, char * buffer, size_t bufSize);
 
 /** The function of getting the last value that was read from the file through the C_CSV_GetValue function.
  * Use the macro C_CSV_GetLastSavedValue(obj, buffer) to avoid errors related to the length of the row.
  * Returns a pointer to a string with a value or NULL in case of an error. */
 #define C_CSV_GetLastSavedValue(obj, buffer) c_csv_getlastsavedvalue((obj), (buffer), sizeof((buffer)) / sizeof((buffer)[0]))
-int c_csv_getlastsavedvalue(C_CSV obj, char * buffer, int bufSize);
+int c_csv_getlastsavedvalue(C_CSV obj, char * buffer, size_t bufSize);
 
 /** The function of adding a string to the end of the data stored in the object.
  * Use the macro C_CSV_AddRow(obj, row) to avoid errors related to the length of the row.

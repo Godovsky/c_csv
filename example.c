@@ -16,10 +16,10 @@ int main(int argc, char * argv[]) {
                     for (i = 0; i < rows; i++) {
                         char value[32] = "";
                         if (0 == C_CSV_GetValue(obj, i, 0, value))
-                            printf("Row = %5lld, %10s = %d: %-10s | ", i, "columns", 0, value);
+                            printf("Row = %5lld, %10s = %5d: %-10s | ", i, "columns", 0, value);
 
                         if (0 == C_CSV_GetValue(obj, i, 0, value))
-                            printf("%10s = %5lld, %10s = %d: %-10s | ", "Rows", i, "columns", 3, value);
+                            printf("%10s = %5lld, %10s = %5d: %-10s | ", "Rows", i, "columns", 3, value);
 
                         if (0 == C_CSV_GetLastSavedValue(obj, value))
                             printf("%s %s\n", "Last saved value:", value);

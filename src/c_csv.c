@@ -29,10 +29,10 @@ typedef struct private {
     char * data;
     int dataSize;
     char separator;
-    int numberOfRows;
-    int numberOfColumns;
-    int position;
-    int lastValueLen;
+    size_t numberOfRows;
+    size_t numberOfColumns;
+    size_t position;
+    size_t lastValueLen;
 } * PRIVATE;
 
 C_CSV C_CSV_Create() {
@@ -175,7 +175,7 @@ int C_CSV_ReadFile(C_CSV obj, char fileName[]) {
         return 1;
     }
 
-    int fileSize = ftell(fp);
+    size_t fileSize = (size_t)ftell(fp);
     if (0 > fileSize) {
         printf("C_CSV_ReadFile: file size measurement error\n");
         fclose(fp);
@@ -207,7 +207,7 @@ int C_CSV_ReadFile(C_CSV obj, char fileName[]) {
     }
     prvt->dataSize = fileSize;
 
-    int n = fread(prvt->data, fileSize, 1, fp);
+    size_t n = fread(prvt->data, fileSize, 1, fp);
     if (n != 1) {
         printf("C_CSV_ReadFile: error reading data from a file\n");
         fclose(fp);
@@ -217,13 +217,13 @@ int C_CSV_ReadFile(C_CSV obj, char fileName[]) {
     fclose(fp);
 
     int isFirstNewLine = 0;
-    int nextNumOfColumns = 0;
+    size_t nextNumOfColumns = 0;
     prvt->numberOfRows = 0;
     prvt->numberOfColumns = 0;
 
     int isSeparator = 0;
 
-    int i;
+    size_t i;
     for (i = 0; i < fileSize; i++) {
         if (prvt->data[i] == prvt->separator || prvt->data[i] == '\n' || i + 1 == fileSize) {
             if (prvt->data[i] == prvt->separator)
@@ -243,7 +243,7 @@ int C_CSV_ReadFile(C_CSV obj, char fileName[]) {
                 prvt->numberOfRows++;
 
                 if (nextNumOfColumns != prvt->numberOfColumns) {
-                    printf("C_CSV_ReadFile: different number of columns in row %d\n", prvt->numberOfRows);
+                    printf("C_CSV_ReadFile: different number of columns in row %lld\n", prvt->numberOfRows);
                     free((void *)prvt->data);
                     prvt->data = NULL;
                     prvt->dataSize = 0;
@@ -316,7 +316,7 @@ int c_csv_add_row(C_CSV obj, char * row[], size_t size) {
         return 1;
     }
 
-    int i;
+    size_t i;
     for (i = 0; i < size; i++) {
         if (strchr(row[i], prvt->separator)) {
             printf("c_csv_add_row: the value %s contains a separator\n", row[i]);
@@ -326,7 +326,7 @@ int c_csv_add_row(C_CSV obj, char * row[], size_t size) {
 
         size_t len = strlen(row[i]);
         char * pre = prvt->data;
-        int prevSize = prvt->dataSize;
+        size_t prevSize = prvt->dataSize;
         prvt->dataSize += len + 1;
         prvt->data = (char *)malloc(prvt->dataSize);
         if (NULL == prvt->data) {
@@ -393,7 +393,7 @@ int C_CSV_WriteFile(C_CSV obj, char fileName[]) {
         return 1;
     }
 
-    int n = fwrite(prvt->data, prvt->dataSize, 1, fp);
+    size_t n = fwrite(prvt->data, prvt->dataSize, 1, fp);
     if (n != 1) {
         printf("C_CSV_WriteFile: error writting data to a file\n");
         fclose(fp);
@@ -405,7 +405,7 @@ int C_CSV_WriteFile(C_CSV obj, char fileName[]) {
     return 0;
 }
 
-int c_csv_get_value(C_CSV obj, size_t row, size_t col, char * buffer, int bufSize) {
+int c_csv_get_value(C_CSV obj, size_t row, size_t col, char * buffer, size_t bufSize) {
     if (NULL == obj) {
         printf("C_CSV_GetValue: the object is NULL\n");
 
@@ -430,14 +430,14 @@ int c_csv_get_value(C_CSV obj, size_t row, size_t col, char * buffer, int bufSiz
         row < 0 ||
         col > prvt->numberOfColumns - 1 ||
         col < 0) {
-        printf("C_CSV_GetValue: the arguments passed are out of range (%d rows, %d columns)\n", prvt->numberOfRows, prvt->numberOfColumns);
+        printf("C_CSV_GetValue: the arguments passed are out of range (%lld rows, %lld columns)\n", prvt->numberOfRows, prvt->numberOfColumns);
 
         return 1;
     }
 
-    int tmpCol = 0;
-    int tmpRow = 0;
-    int i;
+    size_t tmpCol = 0;
+    size_t tmpRow = 0;
+    size_t i;
     for (i = 0; i < prvt->dataSize; i++) {
         if (row == tmpRow && col == tmpCol) {
             prvt->lastValueLen = 0;
@@ -448,7 +448,7 @@ int c_csv_get_value(C_CSV obj, size_t row, size_t col, char * buffer, int bufSiz
             }
 
             if (prvt->lastValueLen >= bufSize){
-                printf("C_CSV_GetValue: the length (%d) of the proposed buffer is less than the length (%d) of the value\n", bufSize, prvt->lastValueLen);
+                printf("C_CSV_GetValue: the length (%lld) of the proposed buffer is less than the length (%lld) of the value\n", bufSize, prvt->lastValueLen);
                 /* strncpy(buffer, &prvt->data[i], bufSize - 1); */
                 strcpy(buffer, "");
                 
@@ -473,7 +473,7 @@ int c_csv_get_value(C_CSV obj, size_t row, size_t col, char * buffer, int bufSiz
     return 1;
 }
 
-int c_csv_getlastsavedvalue(C_CSV obj, char * buffer, int bufSize) {
+int c_csv_getlastsavedvalue(C_CSV obj, char * buffer, size_t bufSize) {
     if (NULL == obj) {
         printf("C_CSV_GetValue: the object is NULL\n");
 
@@ -483,7 +483,7 @@ int c_csv_getlastsavedvalue(C_CSV obj, char * buffer, int bufSize) {
     PRIVATE prvt = (PRIVATE)obj;
 
     if (prvt->lastValueLen >= bufSize){
-        printf("C_CSV_GetValue: the length (%d) of the proposed buffer is less than the length (%d) of the value\n", bufSize, prvt->lastValueLen);
+        printf("C_CSV_GetValue: the length (%lld) of the proposed buffer is less than the length (%lld) of the value\n", bufSize, prvt->lastValueLen);
         /* strncpy(buffer, &prvt->data[prvt->position], bufSize - 1); */
         strcpy(buffer, "");
 
