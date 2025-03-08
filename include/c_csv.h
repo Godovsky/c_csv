@@ -22,15 +22,8 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 #ifndef C_CSV_H
 #define C_CSV_H
 
-#define SAVED_VALUE_LENGTH 32
-
 /** A pointer to the object that is used to work with the csv format. */
 typedef void * C_CSV;
-
-/** Structure for saving the value found in the CSV file. */
-typedef struct {
-    char lastSavedValue[SAVED_VALUE_LENGTH];
-} LAST_VALUE;
 
 /** The function allocates memory for the C_CSV (void *) object and returs it.
  * All object parameters will be initialized with zeros.
@@ -77,12 +70,16 @@ int C_CSV_ReadFile(C_CSV obj, char fileName[]);
 int C_CSV_WriteFile(C_CSV obj, char fileName[]);
 
 /** A function to get the value stored in row "row" and column "col".
+ * Use the macro C_CSV_GetValue(obj, row, col, buffer) to avoid errors related to the length of the row.
  * Returns a pointer to a string with a value or NULL in case of an error. */
-int C_CSV_GetValue(C_CSV obj, size_t row, size_t col, LAST_VALUE * LastValue);
+#define C_CSV_GetValue(obj, row, col, buffer) c_csv_get_value((obj), (row), (col), (buffer), sizeof((buffer)) / sizeof((buffer)[0]))
+int c_csv_get_value(C_CSV obj, size_t row, size_t col, char * buffer, int bufSize);
 
 /** The function of getting the last value that was read from the file through the C_CSV_GetValue function.
+ * Use the macro C_CSV_GetLastSavedValue(obj, buffer) to avoid errors related to the length of the row.
  * Returns a pointer to a string with a value or NULL in case of an error. */
-int C_CSV_GetLastSavedValue(C_CSV obj, LAST_VALUE * LastValue);
+#define C_CSV_GetLastSavedValue(obj, buffer) c_csv_getlastsavedvalue((obj), (buffer), sizeof((buffer)) / sizeof((buffer)[0]))
+int c_csv_getlastsavedvalue(C_CSV obj, char * buffer, int bufSize);
 
 /** The function of adding a string to the end of the data stored in the object.
  * Use the macro C_CSV_AddRow(obj, row) to avoid errors related to the length of the row.
