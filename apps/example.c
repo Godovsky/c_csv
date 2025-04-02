@@ -4,22 +4,24 @@
 
 #include <c_csv.h>
 
-int main(int argc, char * argv[]) {
+int main(int argc, char *argv[]) {
     C_CSV obj = C_CSV_Create();
 
     if (NULL != obj) {
         if (0 == C_CSV_SetSeparator(obj, ';')) {
+            size_t dataSize = 0;
+            size_t i;
+
             if (0 == C_CSV_ReadFile(obj, "file.csv")) {
                 size_t rows = 0;
                 if (0 == C_CSV_GetNumberOfRows(obj, &rows)) {
-                    size_t i;
                     for (i = 0; i < rows; i++) {
                         char value[32] = "";
                         if (0 == C_CSV_GetValue(obj, i, 0, value))
-                            printf("Row = %5lld, %10s = %5d: %-10s | ", i, "columns", 0, value);
+                            printf("Row = %5lu, %10s = %5d: %-10s | ", (unsigned long)i, "columns", 0, value);
 
                         if (0 == C_CSV_GetValue(obj, i, 0, value))
-                            printf("%10s = %5lld, %10s = %5d: %-10s | ", "Rows", i, "columns", 3, value);
+                            printf("%10s = %5lu, %10s = %5d: %-10s | ", "Rows", (unsigned long)i, "columns", 3, value);
 
                         if (0 == C_CSV_GetLastSavedValue(obj, value))
                             printf("%s %s\n", "Last saved value:", value);
@@ -27,8 +29,6 @@ int main(int argc, char * argv[]) {
                 }
             }
 
-            size_t dataSize = 0;
-            int i;
             for (i = 0; i < 6; i++) {
                 if (0 == C_CSV_GetDataSize(obj, &dataSize)) {
                     if (0 == dataSize) {
@@ -38,15 +38,15 @@ int main(int argc, char * argv[]) {
                             yet (empty), you can add a different number of strings. A
                             separator will be automatically placed between the strings,
                             configured via C_CSV_SetSeparator. */
-                        char * data[] = { "col_1", "col_2", "col_3", "col_4", "col_5", "col_6" };
+                        char *data[] = { "col_1", "col_2", "col_3", "col_4", "col_5", "col_6" };
                         if (0 == C_CSV_AddRow(obj, data))
                             if (C_CSV_WriteFile(obj, "file.csv"))
-                                printf("Error writing to a file (line %d)\n", i);
+                                printf("Error writing to a file (line %lu)\n", (unsigned long)i);
                     } else {
-                        char * data[] = { "Hello", "Hi", "World", "123", "456", "789" };
+                        char *data[] = { "Hello", "Hi", "World", "123", "456", "789" };
                         if (0 == C_CSV_AddRow(obj, data))
                             if (C_CSV_WriteFile(obj, "file.csv"))
-                                printf("Error writing to a file (line %d)\n", i);
+                                printf("Error writing to a file (line %lu)\n", (unsigned long)i);
                     }
                 }
             }

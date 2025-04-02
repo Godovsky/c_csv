@@ -1,24 +1,24 @@
-.PHONY: all lib example run clean
+.PHONY: all lib example clean
 
-CC=gcc
-CFLAGS=-Wall -ansi
+CC = gcc
 
-INCDIR=include
-SRCDIR=src
+CFLAGS = -Wall -ansi -pedantic -s
+INCDIR = include
+INCLUDES = -I./$(INCDIR)
+SRCDIR = src
+BINDIR = bin
+CFILES = $(SRCDIR)/c_csv.c
+HFILES = $(INCDIR)/c_csv.h
 
-ECHO=echo
-
-HFILES=$(wildcard $(INCDIR)/*.h)
-CFILES=$(wildcard $(SRCDIR)/*.c)
-
-CFLAGS+=-I$(INCDIR)
-
-LIBNAME=c_csv
+LIBNAME = c_csv
 
 ifeq ($(OS),Windows_NT)
-	TARGEXT=.exe
-	LIBEXT=.dll
-    RM=del
+	TARGETS = $(patsubst  apps/%.c,$(BINDIR)/%.exe,$(wildcard apps/*.c))
+    EXT = .exe
+    LIBEXT = .dll
+    RM = if exist $(BINDIR) rd /s /q
+    MKDIR = if not exist $(BINDIR) md
+    ECHO = echo
     ifeq ($(PROCESSOR_ARCHITEW6432),AMD64)
         
     else
@@ -32,14 +32,20 @@ ifeq ($(OS),Windows_NT)
 else
     UNAME_S := $(shell uname -s)
     ifeq ($(UNAME_S),Linux)
-		TARGEXT=
-		LIBEXT=.so
-        RM = rm -fv
+        TARGETS = $(patsubst  apps/%.c,$(BINDIR)/%,$(wildcard apps/*.c))
+        EXT = 
+        LIBEXT = .so
+        RM = rm -rfv
+        MKDIR = mkdir -pv
+        ECHO = echo
     endif
     ifeq ($(UNAME_S),Darwin)
-    	TARGEXT=
-        LIBEXT=.dylib
-        RM=rm -fv
+        TARGETS = $(patsubst  apps/%.c,$(BINDIR)/%,$(wildcard apps/*.c))
+        EXT = 
+        LIBEXT = .dylib
+        RM = rm -rfv
+        MKDIR = mkdir -pv
+        ECHO = echo
     endif
     UNAME_P := $(shell uname -p)
     ifeq ($(UNAME_P),x86_64)
@@ -53,39 +59,39 @@ else
     endif
 endif
 
-LIBRARY=lib$(LIBNAME)$(LIBEXT)
-TARGET=example$(TARGEXT)
+LIB = $(BINDIR)/lib$(LIBNAME)$(LIBEXT)
 
 all:
-	@$(ECHO) "* make lib     - to build $(LIBRARY)"
-	@$(ECHO) "* make example - to build $(LIBRARY) and $(TARGET)"
-	@$(ECHO) "* make run     - to run $(TARGET)"
-	@$(ECHO) "* make clean   - to remove all the binaries"
+	@$(ECHO) "* make lib - to build $(patsubst $(BINDIR)/%,%,$(LIB))"
+	@$(ECHO) "* make apps - to build $(patsubst $(BINDIR)/%,%,$(LIB)) and $(patsubst $(BINDIR)/%,%,$(TARGETS))"
+	@$(ECHO) "* make $(patsubst $(BINDIR)/%$(EXT),run-%,$(TARGETS)) - to run one of the app"
+	@$(ECHO) "* make clean - to remove all the binaries"
 
-example: $(LIBRARY) $(TARGET)
+apps: $(LIB) $(TARGETS)
 
-lib: $(LIBRARY)
-
-$(TARGET): example.c $(CFILES) $(HFILES)
-	@$(ECHO) "Building $@"
+$(BINDIR)/%$(EXT): apps/%.c $(CFILES) $(HFILES) | $(BINDIR)
+	@echo "Building $(@F)"
 ifeq ($(UNAME_S),Darwin)
-	@$(CC) $(CFLAGS) $< -o $@ -Wl,-rpath,@loader_path -L./ -l$(LIBNAME)
+	@$(CC) $(CFLAGS) $(INCLUDES) $< -o $@ -Wl,-rpath,@loader_path -L./$(BINDIR) -l$(LIBNAME)
 else
-	@$(CC) $(CFLAGS) $< -o $@ -Wl,-rpath=./ -L./ -l$(LIBNAME)
+	@$(CC) $(CFLAGS) $(INCLUDES) $< -o $@ -Wl,-rpath=./$(BINDIR)/ -L./$(BINDIR) -l$(LIBNAME)
 endif
-	
 
-$(LIBRARY): $(SRCDIR)/c_csv.c $(CFILES) $(HFILES)
-	@$(ECHO) "Building $@" 
+$(BINDIR):
+	@$(MKDIR) $(BINDIR)
+
+lib: $(LIB)
+
+$(LIB): $(CFILES) $(HFILES) | $(BINDIR)
+	@echo "Building $(@F)"
 ifeq ($(UNAME_S),Darwin)
 	@$(CC) $(CFLAGS) -dynamiclib $< -o $@
 else
-	@$(CC) $(CFLAGS) -shared $< -o $@
+	@$(CC) $(CFLAGS) -shared $(INCLUDES) $< -o $@
 endif
 
-run:
-	@./$(TARGET)
+run-%:
+	@./$(patsubst run-%,$(BINDIR)/%,$@) $(ARGS)
 
 clean:
-	@$(RM) $(TARGET)
-	@$(RM) $(LIBRARY)
+	@$(RM) $(BINDIR)
