@@ -9,25 +9,31 @@ int main(int argc, char *argv[]) {
 
     if (NULL != obj) {
         if (0 == C_CSV_SetSeparator(obj, ';')) {
+            char value[32] = "";
             size_t dataSize = 0;
+            size_t tmpRow, tmpCol;
+            size_t lastRow, lastCol;
+            size_t numOfRows = 0;
             size_t i;
 
             if (0 == C_CSV_ReadFile(obj, "file.csv")) {
-                size_t rows = 0;
-                if (0 == C_CSV_GetNumberOfRows(obj, &rows)) {
-                    for (i = 0; i < rows; i++) {
-                        char value[32] = "";
+                if (0 == C_CSV_GetNumberOfRows(obj, &numOfRows)) {
+                    for (i = 0; i < numOfRows; i++) {
                         if (0 == C_CSV_GetValue(obj, i, 0, value))
                             printf("Row = %5lu, %10s = %5d: %-10s | ", (unsigned long)i, "columns", 0, value);
 
                         if (0 == C_CSV_GetValue(obj, i, 0, value))
                             printf("%10s = %5lu, %10s = %5d: %-10s | ", "Rows", (unsigned long)i, "columns", 3, value);
 
-                        if (0 == C_CSV_GetLastSavedValue(obj, value))
+                        if (0 == C_CSV_GetCurrentValue(obj, value))
                             printf("%s %s\n", "Last saved value:", value);
                     }
                 }
             }
+
+            if (0 == C_CSV_GetNumberOfRows(obj, &lastRow))
+                if (0 == C_CSV_GetNumberOfColumns(obj, &lastCol))
+                    printf("\nLast row = %lu, last column = %lu\n", (unsigned long)lastRow, (unsigned long)lastCol);
 
             for (i = 0; i < 6; i++) {
                 if (0 == C_CSV_GetDataSize(obj, &dataSize)) {
@@ -50,6 +56,26 @@ int main(int argc, char *argv[]) {
                     }
                 }
             }
+
+            if (0 == C_CSV_SetPosition(obj, 0, 0)) {
+                if (0 == C_CSV_GetPosition(obj, &tmpRow, &tmpCol))
+                    if (0 == C_CSV_GetCurrentValue(obj, value))
+                        printf("\nRow = %lu, col = %lu, value = %s\n", (unsigned long)tmpRow, (unsigned long)tmpCol, value);
+            }
+            if (0 == C_CSV_SetPosition(obj, 2, 2)) {
+                if (0 == C_CSV_GetPosition(obj, &tmpRow, &tmpCol))
+                    if (0 == C_CSV_GetCurrentValue(obj, value))
+                        printf("Row = %lu, col = %lu, value = %s\n", (unsigned long)tmpRow, (unsigned long)tmpCol, value);
+            }
+            if (0 == C_CSV_SetPosition(obj, 1, 1)) {
+                if (0 == C_CSV_GetPosition(obj, &tmpRow, &tmpCol))
+                    if (0 == C_CSV_GetCurrentValue(obj, value))
+                        printf("Row = %lu, col = %lu, value = %s\n", (unsigned long)tmpRow, (unsigned long)tmpCol, value);
+            }
+
+            if (0 == C_CSV_GetNumberOfRows(obj, &lastRow))
+                if (0 == C_CSV_GetNumberOfColumns(obj, &lastCol))
+                    printf("\nLast row = %lu, last column = %lu\n", (unsigned long)lastRow, (unsigned long)lastCol);
         }
 
         C_CSV_Delete(&obj);

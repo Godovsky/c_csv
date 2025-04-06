@@ -23,7 +23,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 #define C_CSV_H
 
 /** A pointer to the object that is used to work with the csv format. */
-typedef void * C_CSV;
+typedef void *C_CSV;
 
 /** The function allocates memory for the C_CSV (void *) object and returs it.
  * All object parameters will be initialized with zeros.
@@ -33,7 +33,7 @@ C_CSV C_CSV_Create();
 /** The function deletes a previously created C_CSV object and frees up memory.
  * After execution, the object will be assigned NULL.
  * Returns 0 in case of success, returns 1 in case of error. */
-int C_CSV_Delete(C_CSV * obj);
+int C_CSV_Delete(C_CSV *obj);
 
 /** Setting the data separator.
  * In csv files, data is grouped by rows with values in columns separated by a separating symbol.
@@ -45,17 +45,17 @@ int C_CSV_SetSeparator(C_CSV obj, char separator);
 /** The function of getting the size in bytes of all the data stored in the object.
  * The value will be assigned to the "size" argument, which must be passed by pointer.
  * Returns 0 in case of success, returns 1 in case of error. */
-int C_CSV_GetDataSize(C_CSV obj, size_t * size);
+int C_CSV_GetDataSize(C_CSV obj, size_t *size);
 
 /** The function of getting the number of rows in the data stored in the object.
  * The value will be assigned to the "numberOfRows" argument, which must be passed by pointer.
  * Returns 0 in case of success, returns 1 in case of error. */
-int C_CSV_GetNumberOfRows(C_CSV obj, size_t * numberOfRows);
+int C_CSV_GetNumberOfRows(C_CSV obj, size_t *numberOfRows);
 
 /** The function of getting the number of columns in the data stored in the object.
  * The value will be assigned to the "numberOfColumns" argument, which must be passed by pointer.
  * Returns 0 in case of success, returns 1 in case of error. */
-int C_CSV_GetNumberOfColumns(C_CSV obj, size_t * numberOfColumns);
+int C_CSV_GetNumberOfColumns(C_CSV obj, size_t *numberOfColumns);
 
 /** The function of reading a file and saving all its data to a object.
  * It is not recommended to use the same file (file name) for reading and then for writing.
@@ -69,23 +69,31 @@ int C_CSV_ReadFile(C_CSV obj, char fileName[]);
  * Returns 0 in case of success, returns 1 in case of error. */
 int C_CSV_WriteFile(C_CSV obj, char fileName[]);
 
+/** The function sets the position in the data.
+ * Returns 0 in case of success, returns 1 in case of error. */
+int C_CSV_SetPosition(C_CSV obj, size_t row, size_t col);
+
+/** The function stores the current position in the data in variables row and col.
+ * Returns 0 in case of success, returns 1 in case of error. */
+int C_CSV_GetPosition(C_CSV obj, size_t *row, size_t *col);
+
 /** A function to get the value stored in row "row" and column "col".
  * Use the macro C_CSV_GetValue(obj, row, col, buffer) to avoid errors related to the length of the row.
  * Returns a pointer to a string with a value or NULL in case of an error. */
 #define C_CSV_GetValue(obj, row, col, buffer) c_csv_get_value((obj), (row), (col), (buffer), sizeof((buffer)) / sizeof((buffer)[0]))
-int c_csv_get_value(C_CSV obj, size_t row, size_t col, char * buffer, size_t bufSize);
+int c_csv_get_value(C_CSV obj, size_t row, size_t col, char *buffer, size_t bufSize);
 
 /** The function of getting the last value that was read from the file through the C_CSV_GetValue function.
- * Use the macro C_CSV_GetLastSavedValue(obj, buffer) to avoid errors related to the length of the row.
+ * Use the macro C_CSV_GetCurrentValue(obj, buffer) to avoid errors related to the length of the row.
  * Returns a pointer to a string with a value or NULL in case of an error. */
-#define C_CSV_GetLastSavedValue(obj, buffer) c_csv_getlastsavedvalue((obj), (buffer), sizeof((buffer)) / sizeof((buffer)[0]))
-int c_csv_getlastsavedvalue(C_CSV obj, char * buffer, size_t bufSize);
+#define C_CSV_GetCurrentValue(obj, buffer) c_csv_get_current_value((obj), (buffer), sizeof((buffer)) / sizeof((buffer)[0]))
+int c_csv_get_current_value(C_CSV obj, char *buffer, size_t bufSize);
 
 /** The function of adding a string to the end of the data stored in the object.
  * Use the macro C_CSV_AddRow(obj, row) to avoid errors related to the length of the row.
  * The row argument is an array of pointers to strings and looks like this: char * row[].
  * Returns 0 in case of success, returns 1 in case of error. */
 #define C_CSV_AddRow(obj, row) c_csv_add_row((obj), (row), sizeof((row)) / sizeof((row)[0]))
-int c_csv_add_row(C_CSV obj, char * row[], size_t size);
+int c_csv_add_row(C_CSV obj, char *row[], size_t size);
 
 #endif /* C_CSV_H */

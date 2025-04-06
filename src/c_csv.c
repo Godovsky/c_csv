@@ -32,6 +32,8 @@ typedef struct private {
     size_t numberOfRows;
     size_t numberOfColumns;
     size_t position;
+    size_t curRow;
+    size_t curCol;
     size_t lastValueLen;
 } *PRIVATE;
 
@@ -47,6 +49,9 @@ C_CSV C_CSV_Create() {
     prvt->data = NULL;
     prvt->dataSize = 0;
     prvt->separator = 0;
+    prvt->position = 0;
+    prvt->curRow = 0;
+    prvt->curCol = 0;
     prvt->numberOfRows = 0;
     prvt->numberOfColumns = 0;
 
@@ -355,6 +360,7 @@ int c_csv_add_row(C_CSV obj, char *row[], size_t size) {
         else
             prvt->data[prvt->dataSize - 1] = '\n';
     }
+    prvt->numberOfRows++;
 
     return 0;
 }
@@ -446,7 +452,14 @@ int c_csv_get_value(C_CSV obj, size_t row, size_t col, char *buffer, size_t bufS
         return 1;
     }
 
-    for (i = 0; i < prvt->dataSize; i++) {
+    if (row < prvt->curRow /* || col < prvt->curCol */) {
+        prvt->position = 0;
+    } else {
+        tmpRow = prvt->curRow;
+        tmpCol = prvt->curCol;
+    }
+
+    for (i = prvt->position; i < prvt->dataSize; i++) {
         if (row == tmpRow && col == tmpCol) {
             prvt->lastValueLen = 0;
             while (prvt->data[i + prvt->lastValueLen] != prvt->separator &&
@@ -463,7 +476,68 @@ int c_csv_get_value(C_CSV obj, size_t row, size_t col, char *buffer, size_t bufS
                 return 1;
             } else {
                 strncpy(buffer, &prvt->data[i], prvt->lastValueLen);
+                buffer[prvt->lastValueLen] = '\0';
             }
+
+            prvt->position = i;
+            prvt->curRow = tmpRow;
+            prvt->curCol = tmpCol;
+
+            return 0;
+        }
+        if (prvt->data[i] == prvt->separator || prvt->data[i] == '\n' || i + 1 == prvt->dataSize) {
+            tmpCol++;
+
+            if (prvt->data[i] == '\n' || i + 1 == prvt->dataSize) {
+                tmpRow++;
+                tmpCol = 0;
+            }
+        }
+    }
+
+    return 1;
+}
+
+int C_CSV_SetPosition(C_CSV obj, size_t row, size_t col) {
+    PRIVATE prvt = (PRIVATE)obj;
+
+    size_t tmpCol = 0;
+    size_t tmpRow = 0;
+    size_t i;
+
+    if (NULL == obj) {
+        printf("C_CSV_GetValue: the object is NULL\n");
+
+        return 1;
+    }
+
+    if (row > prvt->numberOfRows - 1 ||
+        row < 0 ||
+        col > prvt->numberOfColumns - 1 ||
+        col < 0) {
+        printf("C_CSV_GetValue: the arguments passed are out of range (%lu rows, %lu columns)\n", (unsigned long)prvt->numberOfRows, (unsigned long)prvt->numberOfColumns);
+
+        return 1;
+    }
+
+    if (row < prvt->curRow /* || col < prvt->curCol */) {
+        prvt->position = 0;
+    } else {
+        tmpRow = prvt->curRow;
+        tmpCol = prvt->curCol;
+    }
+
+    for (i = prvt->position; i < prvt->dataSize; i++) {
+        if (row == tmpRow && col == tmpCol) {
+            prvt->lastValueLen = 0;
+            while (prvt->data[i + prvt->lastValueLen] != prvt->separator &&
+                prvt->data[i + prvt->lastValueLen] != '\n' &&
+                i + prvt->lastValueLen != prvt->dataSize) {
+                prvt->lastValueLen++;
+            }
+
+            prvt->curRow = tmpRow;
+            prvt->curCol = tmpCol;
             prvt->position = i;
 
             return 0;
@@ -481,7 +555,28 @@ int c_csv_get_value(C_CSV obj, size_t row, size_t col, char *buffer, size_t bufS
     return 1;
 }
 
-int c_csv_getlastsavedvalue(C_CSV obj, char *buffer, size_t bufSize) {
+int C_CSV_GetPosition(C_CSV obj, size_t *row, size_t *col) {
+    PRIVATE prvt = (PRIVATE)obj;
+
+    if (NULL == obj) {
+        printf("C_CSV_GetPosition: the object is NULL\n");
+
+        return 1;
+    }
+
+    if (NULL == row || NULL == col) {
+        printf("C_CSV_GetPosition: one of the variables pointing to the position is NULL\n");
+
+        return 1;
+    }
+
+    *row = prvt->curRow;
+    *col = prvt->curCol;
+
+    return 0;
+}
+
+int c_csv_get_current_value(C_CSV obj, char *buffer, size_t bufSize) {
     PRIVATE prvt = (PRIVATE)obj;
 
     if (NULL == obj) {
@@ -498,6 +593,7 @@ int c_csv_getlastsavedvalue(C_CSV obj, char *buffer, size_t bufSize) {
         return 1;
     } else {
         strncpy(buffer, &prvt->data[prvt->position], prvt->lastValueLen);
+        buffer[prvt->lastValueLen] = '\0';
     }
 
     return 0;
